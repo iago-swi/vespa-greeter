@@ -1,7 +1,11 @@
 # Vespa Greeter — Claude version
 
 A small 3D browser game built with Claude (Anthropic), using Three.js. Everything is
-procedural: there are no image, model or sound files, only `index.html` and `game.js`.
+procedural: the game uses no image, model or sound files, only `index.html` and `game.js`.
+
+**[Play it in your browser](https://iago-swi.github.io/vespa-greeter/claude/)**
+
+![Vespa Greeter gameplay: the rider on a mint scooter returns the wave of an oncoming motorcyclist on a lakeside mountain road at golden hour](screenshot.jpg)
 
 ## Run it
 
