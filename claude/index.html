@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vespa Greeter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,800;1,9..144,500;1,9..144,800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#f7eedc; --ink:#191512; --mint:#9ad9c7; --coral:#ff7d5c; --gold:#f6bd6a;
+    --glass:rgba(22,16,12,.38);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;background:#0c0a09;color:var(--cream);
+    font-family:'DM Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;user-select:none}
+  canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block}
+
+  /* ---------- HUD ---------- */
+  #hud{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .9s ease}
+  #hud.on{opacity:1}
+  .lbl{font-weight:700;font-size:11px;letter-spacing:.34em;text-transform:uppercase;opacity:.8}
+  #scoreBox{position:absolute;left:34px;top:26px;text-shadow:0 2px 24px rgba(0,0,0,.45)}
+  #score{font:italic 800 76px/0.95 'Fraunces',serif;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  #score.bump{animation:bump .35s ease}
+  #score.neg{color:#ffb7a3}
+  @keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.14)}100%{transform:scale(1)}}
+  #combo{display:inline-block;margin-top:8px;padding:5px 12px 6px;border-radius:99px;background:var(--glass);
+    backdrop-filter:blur(10px);font-weight:700;font-size:13px;letter-spacing:.12em;border:1px solid rgba(255,255,255,.14)}
+  #combo b{color:var(--gold);font-size:15px}
+  #tally{margin-top:12px;display:flex;gap:14px;font-size:13px;font-weight:500;opacity:.92}
+  #tally span b{font-weight:700;margin-left:4px;font-variant-numeric:tabular-nums}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:1px}
+
+  #sunBox{position:absolute;right:34px;top:30px;width:230px;text-align:right;text-shadow:0 2px 18px rgba(0,0,0,.45)}
+  #sunTime{font:italic 800 40px/1 'Fraunces',serif;font-variant-numeric:tabular-nums;margin-top:4px}
+  #sunBar{position:relative;height:5px;border-radius:9px;margin-top:12px;
+    background:linear-gradient(90deg,#ffe9b0,#ffb45e 45%,#ff6a4d 78%,#5b3d7a);opacity:.95}
+  #sunDot{position:absolute;top:50%;width:15px;height:15px;border-radius:50%;background:#fff6dc;
+    transform:translate(-50%,-50%);box-shadow:0 0 16px 5px rgba(255,214,140,.9)}
+
+  #minimap{position:absolute;left:30px;bottom:28px;width:190px;height:190px;border-radius:26px;background:var(--glass);
+    backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.14);box-shadow:0 12px 40px rgba(0,0,0,.3)}
+  #speedo{position:absolute;right:30px;bottom:26px;width:190px;height:190px;filter:drop-shadow(0 12px 28px rgba(0,0,0,.4))}
+
+  #hint{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);display:flex;gap:18px;align-items:center;
+    padding:10px 18px;border-radius:99px;background:var(--glass);backdrop-filter:blur(12px);
+    border:1px solid rgba(255,255,255,.14);font-size:13px;font-weight:500;transition:opacity 1.2s}
+  kbd{display:inline-block;min-width:26px;padding:3px 8px;margin-right:6px;border-radius:7px;text-align:center;
+    font:700 11px 'DM Sans',sans-serif;letter-spacing:.06em;color:var(--ink);background:var(--cream);
+    box-shadow:0 2px 0 rgba(0,0,0,.35)}
+  #waveIcon{position:absolute;left:50%;bottom:92px;font-size:44px;transform:translateX(-50%) scale(.6);opacity:0}
+  #waveIcon.go{animation:wv .8s ease}
+  @keyframes wv{0%{opacity:0;transform:translateX(-50%) scale(.5) rotate(-20deg)}25%{opacity:1;transform:translateX(-50%) scale(1.25) rotate(18deg)}
+    55%{transform:translateX(-50%) scale(1.1) rotate(-14deg)}100%{opacity:0;transform:translateX(-50%) scale(1) rotate(10deg)}}
+
+  #toasts{position:absolute;left:0;right:0;top:19%;display:flex;flex-direction:column;align-items:center}
+  .toast{position:absolute;text-align:center;animation:toast 1.9s cubic-bezier(.2,.9,.2,1) forwards;text-shadow:0 4px 30px rgba(0,0,0,.5)}
+  .toast .t{font:italic 800 58px/1 'Fraunces',serif;letter-spacing:-.01em}
+  .toast .p{font:800 30px/1.2 'Fraunces',serif;margin-top:4px}
+  .toast .s{font-weight:700;font-size:12px;letter-spacing:.3em;text-transform:uppercase;margin-top:8px;opacity:.9}
+  .toast.good .t{color:#fff3cf}.toast.good .p{color:var(--gold)}
+  .toast.bad .t{color:#ffd2c4}.toast.bad .p{color:var(--coral)}
+  @keyframes toast{0%{opacity:0;transform:translateY(26px) scale(.8)}12%{opacity:1;transform:translateY(0) scale(1.04)}
+    22%{transform:scale(1)}75%{opacity:1}100%{opacity:0;transform:translateY(-46px) scale(.98)}}
+
+  #flash{position:fixed;inset:0;pointer-events:none;opacity:0}
+  #flash.good{animation:fl .7s ease;background:radial-gradient(ellipse at center,transparent 45%,rgba(255,205,110,.42))}
+  #flash.bad{animation:fl .7s ease;background:radial-gradient(ellipse at center,transparent 40%,rgba(255,70,40,.5))}
+  @keyframes fl{0%{opacity:0}18%{opacity:1}100%{opacity:0}}
+
+  #pause{position:fixed;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;
+    background:rgba(12,8,6,.45);backdrop-filter:blur(8px)}
+  #pause.on{display:flex}
+  #pause h2{font:italic 800 72px 'Fraunces',serif;margin:0}
+
+  /* ---------- Screens ---------- */
+  .screen{position:fixed;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0 clamp(28px,7vw,110px);
+    background:linear-gradient(95deg,rgba(14,9,6,.80) 0%,rgba(14,9,6,.5) 34%,rgba(14,9,6,0) 62%);
+    transition:opacity .9s ease,visibility .9s;z-index:5}
+  .screen.off{opacity:0;visibility:hidden;pointer-events:none}
+  .kicker{font-weight:700;font-size:12px;letter-spacing:.42em;text-transform:uppercase;color:var(--gold)}
+  h1{font:800 clamp(72px,11vw,168px)/.84 'Fraunces',serif;letter-spacing:-.035em;margin:20px 0 26px;text-shadow:0 8px 60px rgba(0,0,0,.4)}
+  h1 em{font-style:italic;font-weight:500;color:var(--mint)}
+  .lede{max-width:470px;font-size:18px;line-height:1.55;margin:0 0 26px;opacity:.94}
+  .rules{display:grid;gap:9px;margin:0 0 30px;padding:0;list-style:none;font-size:15px;max-width:500px}
+  .rules li{display:flex;gap:12px;align-items:baseline}
+  .rules b{font:800 15px 'Fraunces',serif;min-width:52px;text-align:right;font-variant-numeric:tabular-nums}
+  .plus{color:var(--gold)}.minus{color:var(--coral)}
+  .keys{display:flex;flex-wrap:wrap;gap:20px;font-size:13px;font-weight:500;opacity:.9;margin-top:26px}
+  button{pointer-events:auto;align-self:flex-start;cursor:pointer;border:0;border-radius:99px;padding:18px 38px 19px;
+    font:700 15px 'DM Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--ink);
+    background:linear-gradient(180deg,#fff3da,#f6bd6a);box-shadow:0 12px 40px rgba(246,160,70,.45),inset 0 1px 0 #fff;
+    transition:transform .15s ease,box-shadow .15s ease}
+  button:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 18px 50px rgba(246,160,70,.6),inset 0 1px 0 #fff}
+  #endRank{font:italic 800 clamp(48px,7vw,104px)/.9 'Fraunces',serif;margin:16px 0 8px;color:var(--mint);letter-spacing:-.02em}
+  #endScore{font:800 clamp(64px,9vw,140px)/1 'Fraunces',serif;font-variant-numeric:tabular-nums;letter-spacing:-.03em}
+  #endStats{display:flex;gap:34px;margin:14px 0 34px;font-size:14px}
+  #endStats div b{display:block;font:800 34px 'Fraunces',serif}
+
+  #loading{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(ellipse at 50% 60%,#3a2418,#0c0a09 70%);transition:opacity 1s ease,visibility 1s}
+  #loading.off{opacity:0;visibility:hidden}
+  #loading .big{font:italic 800 46px 'Fraunces',serif;color:var(--cream)}
+  #loading .sm{margin-top:14px;font-size:12px;font-weight:700;letter-spacing:.4em;text-transform:uppercase;color:var(--gold);
+    animation:pulse 1.4s ease-in-out infinite}
+  @keyframes pulse{50%{opacity:.35}}
+  @media (max-height:640px){.rules{display:none}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="hud">
+  <div id="scoreBox">
+    <div class="lbl">Respect</div>
+    <div id="score">0</div>
+    <div id="combo">Combo <b id="comboN">×1</b></div>
+    <div id="tally">
+      <span><i class="dot" style="background:#f6bd6a"></i>Greeted<b id="stOk">0</b></span>
+      <span><i class="dot" style="background:#ff7d5c"></i>Awkward<b id="stBad">0</b></span>
+      <span><i class="dot" style="background:#b9a7d6"></i>Ignored<b id="stMiss">0</b></span>
+    </div>
+  </div>
+  <div id="sunBox">
+    <div class="lbl">Sunset in</div>
+    <div id="sunTime">3:00</div>
+    <div id="sunBar"><div id="sunDot"></div></div>
+  </div>
+  <canvas id="minimap" width="380" height="380"></canvas>
+  <canvas id="speedo" width="380" height="380"></canvas>
+  <div id="waveIcon">👋</div>
+  <div id="hint"><span><kbd>SPACE</kbd>wave back</span><span><kbd>↑</kbd><kbd>↓</kbd>throttle</span><span><kbd>C</kbd>camera</span></div>
+  <div id="toasts"></div>
+</div>
+<div id="flash"></div>
+<div id="pause"><h2>Paused</h2><div class="lbl" style="margin-top:10px">Press P to ride on</div></div>
+
+<div id="title" class="screen off">
+  <div class="kicker">A golden-hour ride &nbsp;·&nbsp; Lago Piccolo</div>
+  <h1>Vespa<br><em>Greeter</em></h1>
+  <p class="lede">One lap of daylight left. When an oncoming motorcyclist raises a hand, wave back before you pass each other. Never wave first — and never at a lorry.</p>
+  <ul class="rules">
+    <li><b class="plus">+100</b><span>Return a rider's wave (faster is worth more, streaks multiply)</span></li>
+    <li><b class="minus">−50</b><span>Wave at someone who didn't: stoic bikers, cars, trucks, cyclists</span></li>
+    <li><b class="minus">−30</b><span>Leave a waving rider hanging</span></li>
+  </ul>
+  <button id="start">Start the ride</button>
+  <div class="keys"><span><kbd>SPACE</kbd>wave</span><span><kbd>↑</kbd><kbd>↓</kbd>throttle</span><span><kbd>C</kbd>camera</span><span><kbd>M</kbd>sound</span><span><kbd>P</kbd>pause</span></div>
+</div>
+
+<div id="end" class="screen off">
+  <div class="kicker">The sun is down</div>
+  <div id="endRank">Vespista</div>
+  <div id="endScore">0</div>
+  <div id="endStats">
+    <div><b id="eOk">0</b>waves returned</div>
+    <div><b id="eBad">0</b>awkward waves</div>
+    <div><b id="eMiss">0</b>riders ignored</div>
+    <div><b id="eCombo">×1</b>best streak</div>
+  </div>
+  <button id="again">Ride again</button>
+</div>
+
+<div id="loading"><div class="big">Vespa Greeter</div><div class="sm" id="loadMsg">Raising the mountains</div></div>
+
+<script type="importmap">
+{"imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+<script type="module" src="game.js"></script>
+</body>
+</html>
