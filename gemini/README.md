@@ -1,4 +1,3 @@
-# Vespa Greeter — Gemini version
+# Passo del Saluto
 
-Not built yet. This folder is reserved for the version of the game created with Gemini,
-from the same brief as the other variants.
+[Play the Gemini edition](https://iago-swi.github.io/vespa-greeter/gemini/) or open `index.html` locally. The bundled Three.js dependency supports offline play. See [README.txt](README.txt) for controls and game modes.

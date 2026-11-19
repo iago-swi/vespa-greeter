@@ -16,8 +16,8 @@ self-contained, so they can be compared side by side.
 | Variant | Folder | Status |
 | --- | --- | --- |
 | Claude (Anthropic) | [`claude/`](claude/) | Playable |
-| ChatGPT (OpenAI) | [`chatgpt/`](chatgpt/) | Not built yet |
-| Gemini (Google) | [`gemini/`](gemini/) | Not built yet |
+| ChatGPT (OpenAI) | [`chatgpt/`](chatgpt/) | Playable |
+| Gemini (Google) | [`gemini/`](gemini/) | Playable |
 
 ## Running a variant
 

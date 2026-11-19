@@ -1,21 +1,191 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Vespa Greeter — Gemini version</title>
-<style>
-  body{margin:0;min-height:100vh;display:grid;place-items:center;background:#17120e;color:#f7eedc;font-family:Georgia,serif;text-align:center}
-  h1{font-style:italic;font-size:2.4rem;margin:0 0 .4em}
-  p{font-family:system-ui,sans-serif;opacity:.8;margin:0 0 1.4em}
-  a{color:#9ad9c7;font-family:system-ui,sans-serif}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vespa Greeter — Passo del Saluto</title>
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
-<main>
-  <h1>Gemini version</h1>
-  <p>Not built yet.</p>
-  <a href="../">Back to all versions</a>
-</main>
+  <div id="canvas-container"></div>
+
+  <!-- Screen-Space Optical Sun Lens Flare -->
+  <div id="lens-flare" aria-hidden="true">
+    <div id="flare-main" class="flare-el"></div>
+    <div id="flare-g1" class="flare-el"></div>
+    <div id="flare-g2" class="flare-el"></div>
+    <div id="flare-g3" class="flare-el"></div>
+  </div>
+
+  <div id="salute-flash"></div>
+  <div id="toast-layer"></div>
+
+  <!-- Active Gameplay HUD -->
+  <div id="hud">
+    <div class="hud-top">
+      <div class="hud-card score-panel">
+        <div class="stat">
+          <span class="stat-label">Score</span>
+          <span class="stat-val gold" id="ui-score">0</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Streak</span>
+          <span class="stat-val mint" id="ui-streak">0x</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Lap</span>
+          <span class="stat-val" id="ui-lap">1 / 2</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Best</span>
+          <span class="stat-val soft" id="ui-best">0</span>
+        </div>
+      </div>
+
+      <div class="hud-right">
+        <div class="hud-card" id="minimap-wrap">
+          <canvas id="minimap" width="148" height="148"></canvas>
+          <span class="mini-label">Passo del Saluto • 1.4 km</span>
+        </div>
+        <div class="hud-atmo-row">
+          <span class="atmo-pill" id="ui-atmo-badge">☀ Golden Hour</span>
+          <button type="button" class="hud-action-btn" id="btn-end-cruise" style="display:none;">Finish &amp; Save</button>
+          <button type="button" class="hud-action-btn subtle" id="btn-back-menu" style="display:none;">Garage</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="hud-bottom">
+      <div class="hud-card speedo">
+        <div class="speedo-main">
+          <span class="speed-num" id="ui-speed">53</span>
+          <span class="speed-unit">KM/H</span>
+        </div>
+        <span class="speed-km" id="ui-km">0.0 km</span>
+      </div>
+
+      <div class="controls-bar">
+        <div class="key-pill"><span class="kbd">SPACE</span> Salute</div>
+        <div class="key-pill"><span class="kbd">W/S</span> Pace</div>
+        <div class="key-pill"><span class="kbd">C</span> Camera</div>
+        <div class="key-pill"><span class="kbd">H</span> Horn</div>
+        <div class="key-pill"><span class="kbd">T</span> Time</div>
+        <div class="key-pill"><span class="kbd">M</span> Sound</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Start Screen & Real-Time Vespa Garage -->
+  <div class="overlay" id="start-overlay">
+    <div class="modal">
+      <div class="badge" id="start-badge">Golden-Hour Alpine Pass</div>
+      <div class="title">Vespa Greeter</div>
+      <p class="subtitle">
+        Cruise Passo del Saluto on your vintage Vespa. Return oncoming bikers' left-hand salutes before they pass—keep both hands on the bar when they don't!
+      </p>
+
+      <div class="section-block">
+        <div class="section-label"><span>Vespa Garage • Paint</span></div>
+        <div class="swatch-grid" id="garage-colors"></div>
+      </div>
+
+      <div class="section-block">
+        <div class="section-label"><span>Time of Day • Atmosphere</span></div>
+        <div class="atmo-grid" id="atmosphere-toggle"></div>
+      </div>
+
+      <div class="rules-box">
+        <div class="rule-row">
+          <span class="rule-dot dot-mint"></span>
+          <span>Press <strong>SPACE BAR</strong> when an oncoming motorbike rider raises their left hand (<strong>+100 / +150 pts</strong> + streak multiplier).</span>
+        </div>
+        <div class="rule-row">
+          <span class="rule-dot dot-red"></span>
+          <span><strong>Do NOT salute</strong> non-saluting bikers, cars, trucks, or cyclists (<strong>−50 pts</strong>).</span>
+        </div>
+        <div class="rule-row">
+          <span class="rule-dot dot-gold"></span>
+          <span><strong>C</strong> toggles Chase / Handlebars view • <strong>H</strong> beeps horn • <strong>T</strong> cycles Time of Day.</span>
+        </div>
+      </div>
+
+      <div class="lb-card">
+        <div class="lb-header">
+          <span class="stat-label">Local High Scores</span>
+          <div class="lb-tabs">
+            <button type="button" class="lb-tab active" data-mode="tour">2-Lap Tour</button>
+            <button type="button" class="lb-tab" data-mode="endless">Endless Cruise</button>
+          </div>
+        </div>
+        <div class="lb-list" id="start-lb-list"></div>
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-primary" id="btn-tour">Start 2-Lap Scenic Tour</button>
+        <button type="button" class="btn btn-secondary" id="btn-endless">Endless Cruise</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Finish Screen & High Score Summary -->
+  <div class="overlay hidden" id="finish-overlay">
+    <div class="modal">
+      <div class="badge" id="finish-badge">Pass Complete</div>
+      <div class="title" id="finish-title">Grazie, Rider!</div>
+      <div class="record-tag hidden" id="finish-record-tag">★ NEW HIGH SCORE!</div>
+      <p class="subtitle" id="finish-rank">A true gentleman of the Alpine curves.</p>
+
+      <div class="summary-grid">
+        <div class="sum-tile">
+          <div class="stat-label">Final Score</div>
+          <div class="stat-val gold" id="sum-score">0</div>
+        </div>
+        <div class="sum-tile">
+          <div class="stat-label">Best Streak</div>
+          <div class="stat-val mint" id="sum-streak">0x</div>
+        </div>
+        <div class="sum-tile">
+          <div class="stat-label">Salutes Returned</div>
+          <div class="stat-val" id="sum-hits">0</div>
+        </div>
+        <div class="sum-tile">
+          <div class="stat-label">Awkward Waves</div>
+          <div class="stat-val" id="sum-wrongs">0</div>
+        </div>
+      </div>
+
+      <div class="lb-card">
+        <div class="lb-header">
+          <span class="stat-label" id="finish-lb-title">Top 5 — 2-Lap Scenic Tour</span>
+        </div>
+        <div class="lb-list" id="finish-lb-list"></div>
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-primary" id="btn-replay">Ride Again (2 Laps)</button>
+        <button type="button" class="btn btn-secondary" id="btn-replay-endless">Endless Cruise</button>
+        <button type="button" class="btn btn-ghost" id="btn-garage">Vespa Garage</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="fallback-error">
+    <div>
+      <h2>Unable to load local Three.js bundle</h2>
+      <p style="margin-top:10px;opacity:0.8;">Please make sure the <code>vendor/three.min.js</code> file is intact in the Vespa Greeter folder.</p>
+    </div>
+  </div>
+
+  <!-- Bundled offline Three.js r128 + modular game scripts -->
+  <script src="vendor/three.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/textures.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/road.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/vehicles.js"></script>
+  <script src="js/hud.js"></script>
+  <script src="js/main.js"></script>
 </body>
 </html>
