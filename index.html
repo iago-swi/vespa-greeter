@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vespa Greeter</title>
+<style>
+  :root{--cream:#f7eedc;--mint:#9ad9c7;--gold:#f6bd6a;--ink:#17120e}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;display:grid;place-items:center;padding:32px 16px;color:var(--cream);
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+    background:radial-gradient(ellipse at 50% 0%,#5a3420 0%,#2a1a12 45%,var(--ink) 100%)}
+  main{width:100%;max-width:860px}
+  .kicker{font-size:12px;font-weight:700;letter-spacing:.4em;text-transform:uppercase;color:var(--gold)}
+  h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(48px,10vw,104px);line-height:.9;margin:14px 0 18px;letter-spacing:-.02em}
+  h1 em{color:var(--mint);font-weight:400}
+  p.lede{max-width:560px;font-size:18px;line-height:1.55;margin:0 0 34px;opacity:.92}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+  a.card{display:block;padding:22px 22px 24px;border-radius:18px;text-decoration:none;color:inherit;
+    background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);transition:transform .15s,background .15s,border-color .15s}
+  a.card:hover,a.card:focus-visible{transform:translateY(-3px);background:rgba(255,255,255,.1);border-color:var(--gold);outline:none}
+  .card h2{font-family:Georgia,serif;font-style:italic;font-size:28px;margin:0 0 6px}
+  .card span{font-size:14px;opacity:.75}
+  .tag{display:inline-block;margin-top:14px;padding:4px 10px;border-radius:99px;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+  .tag.live{background:var(--gold);color:var(--ink)}
+  .tag.soon{border:1px solid rgba(255,255,255,.3);opacity:.7}
+  footer{margin-top:34px;font-size:13px;opacity:.6}
+</style>
+</head>
+<body>
+<main>
+  <div class="kicker">One brief · several AI assistants</div>
+  <h1>Vespa <em>Greeter</em></h1>
+  <p class="lede">A small 3D game: ride a vintage scooter along a curvy lakeside road and wave back at oncoming motorcyclists, but only when they wave first. Each version below was built by a different AI assistant from the same brief.</p>
+  <div class="grid">
+    <a class="card" href="claude/">
+      <h2>Claude</h2><span>Anthropic</span><br><span class="tag live">Play</span>
+    </a>
+    <a class="card" href="chatgpt/">
+      <h2>ChatGPT</h2><span>OpenAI</span><br><span class="tag soon">Not built yet</span>
+    </a>
+    <a class="card" href="gemini/">
+      <h2>Gemini</h2><span>Google</span><br><span class="tag soon">Not built yet</span>
+    </a>
+  </div>
+  <footer>Personal fan project, not affiliated with Piaggio.</footer>
+</main>
+</body>
+</html>
