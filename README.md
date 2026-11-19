@@ -5,6 +5,8 @@ road and return the greeting of oncoming motorcyclists: when a rider raises a ha
 wave back with `SPACE` before you have passed each other. Wave at someone who did not
 greet you (a stoic biker, a car, a lorry, a cyclist) and you lose points.
 
+**Play it in your browser: <https://iago-swi.github.io/vespa-greeter/>**
+
 ## One brief, several AI assistants
 
 This repository collects versions of the same game, each created with a different AI
